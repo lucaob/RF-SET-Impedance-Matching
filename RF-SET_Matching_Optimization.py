@@ -173,6 +173,35 @@ class SQUID_ImpedanceMatching:
         Q = np.pi*Z1/(4*self.Z0)
         return Q
 
+class SQUID_ImpedanceMatching2(SQUID_ImpedanceMatching): # Facendo così SQUID_ImpedanceMatching2 diventa figlia di
+                                                         # SQUID_ImpedanceMatching e ne eredita tutti i metodi
+    '''
+    This class allow doing the same calculation as its parent, but with a different oxidation of the Junctions
+    '''
+    
+    def __init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1):
+        SQUID_ImpedanceMatching.__init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1) # In questo modo faccio
+                                                                                           # tutto quello che c'è in __init__
+                                                                                           # di SQUID_ImpedanceMatching
+        #self.parameters = ['gamma1', 'a1'] # Posso ridefinire cose di una classe dalla classe figlia e quello
+                                           # che non ridefinisco rimane com'è
+                                           
+    def _criticalCurrent(self, A):
+        '''
+        Calculates the critical current of the SQUID according to
+        S. V. Lotkhov, E. M. Tolkacheva, D. V. Balashov, M. I. Khabipov, F.-I. Buchholz and A. B. Zorin
+        "Low hysteretic behavior of Al/AlOx/Al Josephson junctions"
+        Applied Physics Letters, 89, 132115 (2006)
+        --------------------------------
+        Parameters:
+        A : SQUID junction area in um^2
+        --------------------------------
+        Returns:
+        Ic : float Critical current in A
+        '''
+        Ic = 10*A*1e-6
+        return Ic
+                                           
 def f(A, N, ZL, a, Delta, CJ, C):
     l = N*a               # SQUID array length in m
     R_N = 33.81 / A       # SQIDs room temperature tunnel resistance
@@ -183,6 +212,13 @@ def f(A, N, ZL, a, Delta, CJ, C):
     tuner = SQUID_ImpedanceMatching(ZL, l, a, RN, Delta, CJ, A, C)
     return abs(tuner.Zres - tuner.th_Zres)
 
+
+### TROVARE UN MODO PER CALCOLARE LA RESISTENZA NORMALE E LA CAPACITA' DI GIUNZIONE SENZA PASSARLE
+### DALL'ESTERNO COME VIENE FATTO ADESSO PERCHE' NON E' PRATICO
+### PROBABILMENTE BISOGNA MODIFICARE ENTRAMBE LE CLASSI
+### LA CAPACITà DI GIUNZIONE SI PUO' LASCIARE COM'E' MA, ANZICHE' PASSARLA SEMPRE DALL'ESTERNO
+### SI PUO' FISSARE UN VALORE DI DEFAULT PER OGNI CLASSE, RIMANE COMUNQUE LA POSSIBILITA' DI
+### PASSARLA DA FUORI
     
 if __name__== "__main__":
     
