@@ -19,4 +19,7 @@ The parent class takes the values from the following sources:
 
 The child class takes the falues of the same parameters from S. V. Lotkhov, E. M. Tolkacheva, D. V. Balashov, M. I. Khabipov, F.-I. Buchholz and A. B. Zorin, "Low hysteretic behavior of Al/AlOx/Al Josephson junctions", Applied Physics Letters, 89, 132115 (2006)
 
-Anyway, at the moment, the child class is still not working because the implementation is still unfinished.
+The script calculation.py performs the calculations by importing the two classes: it finds the best junction area vs distance between neighbouring SQUIDS and calculate the resonance frequency vs distance between neighbouring SQUIDS for two SQUID array lenght.
+
+NEXT STEP: save data in files, plot efficiently.
+
