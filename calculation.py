@@ -50,14 +50,22 @@ def f(A, N, ZL, a, Delta, CJ, C):
     
 if __name__== "__main__":
     
-    squids = [20, 100]           # Number of SQUIDS
+    squids = [20]                  # Number of SQUIDS
     ZL = 100e3                   # Impedance to be matched in ohms
     d = list(range(3, 11, 1))    # Distance between neighbouring SQUIDs in um
     Delta = 180e-6               # Superconducting gap in eV
     C = 84.3                     # cpw lineic capacitance in pF/m
 
+    line1 = "# ZL = " + str(ZL) + " ohm"
+    line2 = "# Number of SQUIDS = " + str(squids)
+    line3 = "# Superconducting gap Delta = " + str(Delta) + " eV"
+    line4 = "# CPW lineic capacitance = " + str(C) + " pF/m"
+    print(line1)
+    print(line2)
+    print(line3)
+    print(line4)
     
-    
+    # Fare un file che salva: R_N, RN, th_Q, Q, LJ, L, Z1, pf, fn, th_Zres, Zres, Ic, d, A
     # Being A the parameter of the optimization, it is in um^2 and can vary
     # betwen teh value defined in "bounds"
     firtsResonanceFreq = []
@@ -86,9 +94,11 @@ if __name__== "__main__":
             else:
                 success.append(False)
             resFreq.append(tuner.fn/1e9)
+            #print(tuner.Q)
             #print("Goodness: ", a, A, goodness, "%", success)
         firtsResonanceFreq.append(resFreq)
 
+    '''
     fig, axis = plt.subplots(1,3, squeeze = True, figsize=(10,5))
     ax = axis[0]
     ax.set_ylabel('Junction Area / um^2')
@@ -103,7 +113,7 @@ if __name__== "__main__":
         ax.plot(d, firtsResonanceFreq[i])
     fig.tight_layout()
 
-    '''
+    
     #Se voglio vedere i singoli valori mi basta calcolare un "tuner" passandogli i
     # valori richiesti e poi printare le singole voci
    
