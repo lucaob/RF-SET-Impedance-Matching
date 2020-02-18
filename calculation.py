@@ -5,32 +5,10 @@ Created on Wed Feb 12 16:36:26 2020
 @author: feynman
 """
 
-import numpy as np
+#import numpy as np
 from scipy.optimize import minimize_scalar
 import matplotlib.pylab as plt
-
-# Choose what oxidation do you want to consider in the calculation
-
-oxidation = 0
-
-if oxidation == 0:
-    from RFSET_Matching_Optimization import SQUID_ImpedanceMatching as SQUIDmatch
-    
-    CJ = 4.46741e-14      # SQUID capacitance in F/um^2 according to L. Wang, "Fabrication
-                          # stability of josephson junctions for superconducting qubits"
-    coeff_R_N = 33.81     # SQIDs room temperature tunnel resistance
-                          # according to V. Ambegaokar, A. Baratoff, "Tunneling
-                          # between superconductors", 1963
-else:
-    from RFSET_Matching_Optimization import SQUID_ImpedanceMatching2 as SQUIDmatch
-    
-    CJ = 7.5e-14          # SQUID capacitance in F/um^2 according to S. V. Lotkhov, E. M. Tolkacheva,
-                          # D. V. Balashov, M. I. Khabipov, F.-I. Buchholz and A. B. Zorin
-                          # "Low hysteretic behavior of Al/AlOx/Al Josephson junctions"
-                          # Applied Physics Letters, 89, 132115 (2006)
-    coeff_R_N = 22.0      # SQIDs room temperature tunnel resistance
-                          # according to V. Ambegaokar, A. Baratoff, "Tunneling
-                          # between superconductors", 1963
+import csv
 
 def f(A, N, ZL, a, Delta, CJ, C):
     l = N*a               # SQUID array length in m
@@ -50,86 +28,112 @@ def f(A, N, ZL, a, Delta, CJ, C):
     
 if __name__== "__main__":
     
-    squids = [20]                  # Number of SQUIDS
-    ZL = 100e3                   # Impedance to be matched in ohms
+    squids = 100                  # Number of SQUIDS
+    #ZL = 100e3                   # Impedance to be matched in ohms
+    ZL = 25.8e3                  # Impedance to be matched in ohms
     d = list(range(3, 11, 1))    # Distance between neighbouring SQUIDs in um
     Delta = 180e-6               # Superconducting gap in eV
     C = 84.3                     # cpw lineic capacitance in pF/m
 
-    line1 = "# ZL = " + str(ZL) + " ohm"
-    line2 = "# Number of SQUIDS = " + str(squids)
-    line3 = "# Superconducting gap Delta = " + str(Delta) + " eV"
-    line4 = "# CPW lineic capacitance = " + str(C) + " pF/m"
-    print(line1)
-    print(line2)
-    print(line3)
-    print(line4)
+    line = []
+    line.append("# ZL = " + str(ZL) + " ohm" + "\n")
+    line.append("# Number of SQUIDS = " + str(squids) + "\n")
+    line.append("# Superconducting gap Delta = " + str(Delta) + " eV" + "\n")
+    line.append("# CPW lineic capacitance = " + str(C) + " pF/m" + "\n")
+                
+    # Choose what oxidation do you want to consider in the calculation
     
-    # Fare un file che salva: R_N, RN, th_Q, Q, LJ, L, Z1, pf, fn, th_Zres, Zres, Ic, d, A
+    oxidation = 0
+    
+    if oxidation == 0:
+        from RFSET_Matching_Optimization import SQUID_ImpedanceMatching as SQUIDmatch
+        
+        CJ = 4.46741e-14      # SQUID capacitance in F/um^2 according to L. Wang, "Fabrication
+                              # stability of josephson junctions for superconducting qubits"
+        coeff_R_N = 33.81     # SQIDs room temperature tunnel resistance
+                              # according to V. Ambegaokar, A. Baratoff, "Tunneling
+                              # between superconductors", 1963
+        line.append("# Normal resistance at room temperature = 33.81/A ohm with junctin area A in um^2" + "\n")
+        line.append("# Critical current = 8.47475*A uA with junctin area A in um^2" + "\n")
+        line.append("# Junction capacitance = 4.46741*10^-14*A F with junctin area A in um^2" + "\n")
+    else:
+        from RFSET_Matching_Optimization import SQUID_ImpedanceMatching2 as SQUIDmatch
+        
+        CJ = 7.5e-14          # SQUID capacitance in F/um^2 according to S. V. Lotkhov, E. M. Tolkacheva,
+                              # D. V. Balashov, M. I. Khabipov, F.-I. Buchholz and A. B. Zorin
+                              # "Low hysteretic behavior of Al/AlOx/Al Josephson junctions"
+                              # Applied Physics Letters, 89, 132115 (2006)
+        coeff_R_N = 22.0      # SQIDs room temperature tunnel resistance
+                              # according to V. Ambegaokar, A. Baratoff, "Tunneling
+                              # between superconductors", 1963
+        line.append("# Normal resistance at room temperature = 22.0/A ohm with A / um^2" + "\n")
+        line.append("# Critical current = 10.0*A uA with junctin area A in um^2" + "\n")
+        line.append("# Junction capacitance = 7.5*10^-14*A F with junctin area A in um^2" + "\n")
+    line.append("#\n")
+    line.append("#Distance between neighbouring SQUIDs / um"+"\t"+"Junctin area / um^2"+"\t"+"IC / A"+"\t"+"Normal Resistance T amb / ohm"+"\t"+"Normal Resistance at mK / ohm"+"\t"+"Junction Capacitance / fF"+"\t"+"SQUID Inductance Lj / H"+"\t"+"SQUID Array Lineic Inductance / H/m"+"\t"+"Plasma Frequency / Hz"+"\t"+"Resoance Frequency / Hz"+"\t"+"Z1 / ohm"+"\t"+"Theoretical Zres / ohm"+"\t"+"Actual Zres / ohm"+"\t"+"Theoretical Q / ohm"+"\t"+"Actual Q / ohm"+"\t"+"Minimization godness / %"+"\t"+"Minimization success"+"\n")
+                
+    linenumber = list(range(len(line)))
+
+    filename = "RFSET_Matching_ox"+str(oxidation)+"_ZL"+str(ZL)+"_N"+str(squids)+".txt"
+    text_file = open(filename, "w")
+    for i in linenumber:
+        text_file.write(line[i])
+    text_file.close()
+    
+    junctionArea = []
+    ic = []
+    normalResistanceTamb = []
+    normalResistance_mK = []
+    junctionCapacitance = []
+    SQUIDInductance = []
+    SQUIDArrayLineicInductance = []
+    plasmaFrequency = []
+    resonanceFrequency = []
+    z1 = []
+    theoreticalZres = []
+    actualZres = []
+    theoreticalQ = []
+    actualQ = []
+    gd = []
+    success = []
+    
     # Being A the parameter of the optimization, it is in um^2 and can vary
     # betwen teh value defined in "bounds"
-    firtsResonanceFreq = []
-    andamento = []
-    for N in squids:
-        ja = []
-        resFreq = []
-        junctionArea = []
-        #print("!!!!!!!!!!!!!!!!!", N)
-        for a in d:
-            a = a*1e-6 # Transform the distance between neighbouring SQUIDs in m
-            res = minimize_scalar(f, bounds=(0.0025, 5), args=(N, ZL, a, Delta, CJ, C), method='bounded', options={'xatol': 1e-10, 'maxiter': 500, 'disp': 0})
-            A = res.x   # Single Junctin area in um^2 coming from minimization
-            junctionArea.append(A)
+    for a in d:
+        a = a*1e-6 # Transform the distance between neighbouring SQUIDs in m
+        res = minimize_scalar(f, bounds=(0.0025, 5), args=(squids, ZL, a, Delta, CJ, C), method='bounded', options={'xatol': 1e-10, 'maxiter': 500, 'disp': 0})
+        A = res.x   # Single Junctin area in um^2 coming from minimization
+        junctionArea.append(A)
+        
+        l = squids*a     # SQUID array length in m
+        R_N = coeff_R_N / A
+        RN = R_N + R_N*17/100 # SQUIDs 15 mK tunnel resistance
+        
+        tuner = SQUIDmatch(ZL, l, a, RN, Delta, CJ, A, C)
+        goodness = abs(tuner.Zres-tuner.th_Zres)/tuner.th_Zres
+
+        if goodness < 0.00035:
+            success.append(True)
+        else:
+            success.append(False)
             
-            l = N*a     # SQUID array length in m
-            R_N = 33.81 / A # SQIDs room temperature tunnel resistance
-                            # according to V. Ambegaokar, A. Baratoff, "Tunneling
-                            # between superconductors", 1963
-            RN = R_N + R_N*17/100 # SQUIDs 15 mK tunnel resistance
-            tuner = SQUIDmatch(ZL, l, a, RN, Delta, CJ, A, C)
-            goodness = abs(tuner.Zres-tuner.th_Zres)/tuner.th_Zres
-            success = []
-            if goodness < 0.00035:
-                success.append(True)
-            else:
-                success.append(False)
-            resFreq.append(tuner.fn/1e9)
-            #print(tuner.Q)
-            #print("Goodness: ", a, A, goodness, "%", success)
-        firtsResonanceFreq.append(resFreq)
-
-    '''
-    fig, axis = plt.subplots(1,3, squeeze = True, figsize=(10,5))
-    ax = axis[0]
-    ax.set_ylabel('Junction Area / um^2')
-    #ax.set_xlabel('Distance between neighbouring SQUIDs / um')
-    ax.plot(d, junctionArea)
-    for i, N in enumerate(squids):
-        ax = axis[i+1]
-        ax.set_title("Number of SQUIDs = %i" %N)
-        ax.set_ylabel('First rersonance Frequency / GHz')
-        if i == 0:
-            ax.set_xlabel('Distance between neighbouring SQUIDs / um')
-        ax.plot(d, firtsResonanceFreq[i])
-    fig.tight_layout()
-
-    
-    #Se voglio vedere i singoli valori mi basta calcolare un "tuner" passandogli i
-    # valori richiesti e poi printare le singole voci
-   
-    print('Reference impedance =', tuner.Z0, "ohm")
-    print('CPW impedance =', tuner.Z1, "ohm")
-    print('Theoretical quality factor =', tuner.th_Q)
-    print('SQUID inductance =', tuner.LJ, "H")
-    print('SQUID lineic inductance =', tuner.L, "H")
-    print('Josephson Plasma Freq =', tuner.fp/1e9, "GHz")
-    print('First rersonance Freq =', tuner.fn/1e9, "GHz")
-    print('Actual quality factor =', tuner.Q)
-    print()
-    print('Theoretical equivalent LC lamped impedance =', tuner.th_Zres, "ohm")
-    print('Actual equivalent LC lamped impedance =', tuner.Zres, "ohm")
-    print('Critical current =', tuner.Ic, "A")
-    print('Junction AREA =', A, 'um^2')
-    print('Normal Resistance at room temp. =', R_N, 'ohm')
-    
-    '''
+        ic.append(tuner.Ic)
+        normalResistanceTamb.append(R_N)
+        normalResistance_mK.append(RN)
+        junctionCapacitance.append(CJ*A)
+        SQUIDInductance.append(tuner.LJ)
+        SQUIDArrayLineicInductance.append(tuner.L)
+        plasmaFrequency.append(tuner.fp)
+        resonanceFrequency.append(tuner.fn)
+        z1.append(tuner.Z1)
+        theoreticalZres.append(tuner.th_Zres)
+        actualZres.append(tuner.Zres)
+        theoreticalQ.append(tuner.th_Q)
+        actualQ.append(tuner.Q)
+        gd.append(goodness)
+        print("Goodness: ", a, A, goodness, "%", success)
+        
+    with open(filename, 'a', newline='') as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerows(zip(d,junctionArea,ic,normalResistanceTamb,normalResistance_mK,junctionCapacitance,SQUIDInductance,SQUIDArrayLineicInductance,plasmaFrequency,resonanceFrequency,z1,theoreticalZres,actualZres,theoreticalQ,actualQ,gd,success))
+    f.close()
