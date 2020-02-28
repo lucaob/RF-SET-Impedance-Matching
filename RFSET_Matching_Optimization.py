@@ -180,7 +180,7 @@ class SQUID_ImpedanceMatching2(SQUID_ImpedanceMatching): # Facendo così SQUID_I
     '''
     
     def __init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1, flux_quanta=0):
-        SQUID_ImpedanceMatching.__init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1, flux_quanta=0) # In questo modo faccio
+        SQUID_ImpedanceMatching.__init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0, n, flux_quanta) # In questo modo faccio
                                                                                                           # tutto quello che c'è in __init__
                                                                                                           # di SQUID_ImpedanceMatching
         #self.parameters = ['gamma1', 'a1'] # Posso ridefinire cose di una classe dalla classe figlia e quello

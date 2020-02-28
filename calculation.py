@@ -21,16 +21,15 @@ def f(A, N, ZL, a, Delta, CJ, C):
     return abs(tuner.Zres - tuner.th_Zres)
 
 
-### TROVARE UN MODO PER CALCOLARE LA RESISTENZA NORMALE SENZA PASSARLE
-### DALL'ESTERNO COME VIENE FATTO ADESSO PERCHE' NON E' PRATICO
-### PROBABILMENTE BISOGNA MODIFICARE ENTRAMBE LE CLASSI
+### CALCOLARE, DOPO LA MINIMIZZAZIONE, A PARAMETRI FISSATI, COSA SUCCEDE
+### CAMBIANDO IL FLUSSO. GRAFICO FREQ RISONANZA VS FLUSSO, GRAFICO 3D FREQ RISON, FLUSSO, DISTANZA TRA SQUID
 
     
 if __name__== "__main__":
     
-    squids = 100                  # Number of SQUIDS
-    #ZL = 100e3                   # Impedance to be matched in ohms
-    ZL = 25.8e3                  # Impedance to be matched in ohms
+    squids = 20                  # Number of SQUIDS
+    ZL = 100e3                   # Impedance to be matched in ohms
+    #ZL = 25.8e3                  # Impedance to be matched in ohms
     d = list(range(3, 11, 1))    # Distance between neighbouring SQUIDs in um
     Delta = 180e-6               # Superconducting gap in eV
     C = 84.3                     # cpw lineic capacitance in pF/m
@@ -43,7 +42,7 @@ if __name__== "__main__":
                 
     # Choose what oxidation do you want to consider in the calculation
     
-    oxidation = 0
+    oxidation = 1
     
     if oxidation == 0:
         from RFSET_Matching_Optimization import SQUID_ImpedanceMatching as SQUIDmatch
@@ -53,9 +52,9 @@ if __name__== "__main__":
         coeff_R_N = 33.81     # SQIDs room temperature tunnel resistance
                               # according to V. Ambegaokar, A. Baratoff, "Tunneling
                               # between superconductors", 1963
-        line.append("# Normal resistance at room temperature = 33.81/A ohm with junctin area A in um^2" + "\n")
+        line.append("# Normal resistance at room temperature = " + str(coeff_R_N) + "/A ohm with junctin area A in um^2" + "\n")
         line.append("# Critical current = 8.47475*A uA with junctin area A in um^2" + "\n")
-        line.append("# Junction capacitance = 4.46741*10^-14*A F with junctin area A in um^2" + "\n")
+        line.append("# Junction capacitance = " + str(CJ) + "*A F with junctin area A in um^2" + "\n")
     else:
         from RFSET_Matching_Optimization import SQUID_ImpedanceMatching2 as SQUIDmatch
         
@@ -64,13 +63,13 @@ if __name__== "__main__":
                               # "Low hysteretic behavior of Al/AlOx/Al Josephson junctions"
                               # Applied Physics Letters, 89, 132115 (2006)
         coeff_R_N = 22.0      # SQIDs room temperature tunnel resistance
-                              # according to V. Ambegaokar, A. Baratoff, "Tunneling
-                              # between superconductors", 1963
-        line.append("# Normal resistance at room temperature = 22.0/A ohm with A / um^2" + "\n")
+                              # according to the same paper
+                              
+        line.append("# Normal resistance at room temperature = " + str(coeff_R_N) + "/A ohm with junctin area A in um^2" + "\n")
         line.append("# Critical current = 10.0*A uA with junctin area A in um^2" + "\n")
-        line.append("# Junction capacitance = 7.5*10^-14*A F with junctin area A in um^2" + "\n")
+        line.append("# Junction capacitance = " + str(CJ) + "*A F with junctin area A in um^2" + "\n")
     line.append("#\n")
-    line.append("#Distance between neighbouring SQUIDs / um"+"\t"+"Junctin area / um^2"+"\t"+"IC / A"+"\t"+"Normal Resistance T amb / ohm"+"\t"+"Normal Resistance at mK / ohm"+"\t"+"Junction Capacitance / fF"+"\t"+"SQUID Inductance Lj / H"+"\t"+"SQUID Array Lineic Inductance / H/m"+"\t"+"Plasma Frequency / Hz"+"\t"+"Resoance Frequency / Hz"+"\t"+"Z1 / ohm"+"\t"+"Theoretical Zres / ohm"+"\t"+"Actual Zres / ohm"+"\t"+"Theoretical Q / ohm"+"\t"+"Actual Q / ohm"+"\t"+"Minimization godness / %"+"\t"+"Minimization success"+"\n")
+    line.append("# Distance between neighbouring SQUIDs / um"+"\t"+"Junctin area / um^2"+"\t"+"IC / A"+"\t"+"Normal Resistance T amb / ohm"+"\t"+"Normal Resistance at mK / ohm"+"\t"+"Junction Capacitance / F"+"\t"+"SQUID Inductance Lj / H"+"\t"+"SQUID Array Lineic Inductance / H/m"+"\t"+"Plasma Frequency / Hz"+"\t"+"Resoance Frequency / Hz"+"\t"+"Z1 / ohm"+"\t"+"Theoretical Zres / ohm"+"\t"+"Actual Zres / ohm"+"\t"+"Theoretical Q / ohm"+"\t"+"Actual Q / ohm"+"\t"+"Minimization godness / %"+"\t"+"Minimization success"+"\n")
                 
     linenumber = list(range(len(line)))
 
@@ -137,3 +136,21 @@ if __name__== "__main__":
         writer = csv.writer(f, delimiter='\t')
         writer.writerows(zip(d,junctionArea,ic,normalResistanceTamb,normalResistance_mK,junctionCapacitance,SQUIDInductance,SQUIDArrayLineicInductance,plasmaFrequency,resonanceFrequency,z1,theoreticalZres,actualZres,theoreticalQ,actualQ,gd,success))
     f.close()
+    
+    # Calculation of Resonance Frequency vs number of flux quanta for fixed values of the other parameters
+    
+    
+    n_flux_quanta = [x * 0.25 for x in range(0, 26)]
+    resonance = []
+    
+    a = 7.                 # Distance between neighbouring SQUIDs in um
+    A = 0.0068804986731425 # Juction area in um^2 for ox1
+    R_N = coeff_R_N / A
+    RN = R_N + R_N*17/100
+    l = squids*a
+    
+    for flux in n_flux_quanta:
+        tuner = SQUIDmatch(ZL, l, a, RN, Delta, CJ, A, C, flux_quanta=flux)
+        resonance.append(tuner.fn/1e6)
+        
+    plt.plot(n_flux_quanta, resonance)
