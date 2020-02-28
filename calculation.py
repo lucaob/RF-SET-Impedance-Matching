@@ -110,9 +110,9 @@ if __name__== "__main__":
         RN = R_N + R_N*17/100 # SQUIDs 15 mK tunnel resistance
         
         tuner = SQUIDmatch(ZL, l, a, RN, Delta, CJ, A, C)
-        goodness = abs(tuner.Zres-tuner.th_Zres)/tuner.th_Zres
+        goodness = (abs(tuner.Zres-tuner.th_Zres)/tuner.th_Zres)*100
 
-        if goodness < 0.00035:
+        if goodness < 0.035:
             success.append(True)
         else:
             success.append(False)
