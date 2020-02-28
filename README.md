@@ -21,5 +21,7 @@ The child class takes the falues of the same parameters from S. V. Lotkhov, E. M
 
 The script calculation.py performs the calculations by importing the two classes: it finds the best junction area vs distance between neighbouring SQUIDS and calculate the resonance frequency vs distance between neighbouring SQUIDS for two SQUID array lenght.
 
-NEXT STEP: save data in files, plot efficiently.
+Script saves results in text files.
+
+NEXT STEP: Add calculation of resonance frequncy vs number of flux quanta.
 
