@@ -18,9 +18,9 @@ class SQUID_ImpedanceMatching:
     source using a Josephson metamaterial", Appl. Phys. Lett, 103, 212601 (2013)
     '''
     
-    def __init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1):
+    def __init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1, flux_quanta=0):
         self.Z0 = Z0 # Characteristic impedance, default 50 ohm
-        
+        self.flux_quanta = flux_quanta # Number of flux quanta (default = 0)
         self.Z1 = self._cpwImpedance(ZL)
         self.Ic = self._criticalCurrent(A)
         self.LJ = self._SQUID_Inductance()
@@ -79,12 +79,12 @@ class SQUID_ImpedanceMatching:
         experimental law
         --------------------------------
         Parameters:
-        A : SQUID junction area in um^2
+        A           : SQUID junction area in um^2
         --------------------------------
         Returns:
         Ic : float Critical current in A
         '''
-        Ic = 8.47475*A*1e-6
+        Ic = 8.47475*A*1e-6*abs(np.cos(self.flux_quanta))
         return Ic
     
     def _SQUID_Inductance(self):
@@ -179,10 +179,10 @@ class SQUID_ImpedanceMatching2(SQUID_ImpedanceMatching): # Facendo così SQUID_I
     This class allow doing the same calculation as its parent, but with a different oxidation of the Junctions
     '''
     
-    def __init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1):
-        SQUID_ImpedanceMatching.__init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1) # In questo modo faccio
-                                                                                           # tutto quello che c'è in __init__
-                                                                                           # di SQUID_ImpedanceMatching
+    def __init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1, flux_quanta=0):
+        SQUID_ImpedanceMatching.__init__(self, ZL, l, a, RN, Delta, CJ, A, C, Z0=50., n=1, flux_quanta=0) # In questo modo faccio
+                                                                                                          # tutto quello che c'è in __init__
+                                                                                                          # di SQUID_ImpedanceMatching
         #self.parameters = ['gamma1', 'a1'] # Posso ridefinire cose di una classe dalla classe figlia e quello
                                            # che non ridefinisco rimane com'è
                                            
@@ -199,7 +199,7 @@ class SQUID_ImpedanceMatching2(SQUID_ImpedanceMatching): # Facendo così SQUID_I
         Returns:
         Ic : float Critical current in A
         '''
-        Ic = 10*A*1e-6
+        Ic = 10*A*1e-6*abs(np.cos(self.flux_quanta))
         return Ic
                                            
 def f(A, N, ZL, a, Delta, CJ, C):
