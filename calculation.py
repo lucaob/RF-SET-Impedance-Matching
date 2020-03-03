@@ -8,6 +8,8 @@ Created on Wed Feb 12 16:36:26 2020
 #import numpy as np
 from scipy.optimize import minimize_scalar
 import matplotlib.pylab as plt
+from mpl_toolkits import mplot3d
+import numpy as np
 import csv
 
 def f(A, N, ZL, a, Delta, CJ, C):
@@ -20,9 +22,6 @@ def f(A, N, ZL, a, Delta, CJ, C):
     tuner = SQUIDmatch(ZL, l, a, RN, Delta, CJ, A, C)
     return abs(tuner.Zres - tuner.th_Zres)
 
-
-### CALCOLARE, DOPO LA MINIMIZZAZIONE, A PARAMETRI FISSATI, COSA SUCCEDE
-### CAMBIANDO IL FLUSSO. GRAFICO FREQ RISONANZA VS FLUSSO, GRAFICO 3D FREQ RISON, FLUSSO, DISTANZA TRA SQUID
 
     
 if __name__== "__main__":
@@ -130,27 +129,55 @@ if __name__== "__main__":
         theoreticalQ.append(tuner.th_Q)
         actualQ.append(tuner.Q)
         gd.append(goodness)
-        print("Goodness: ", a, A, goodness, "%", success)
+        #print("Goodness: ", a, A, goodness, "%", success)
         
     with open(filename, 'a', newline='') as f:
         writer = csv.writer(f, delimiter='\t')
         writer.writerows(zip(d,junctionArea,ic,normalResistanceTamb,normalResistance_mK,junctionCapacitance,SQUIDInductance,SQUIDArrayLineicInductance,plasmaFrequency,resonanceFrequency,z1,theoreticalZres,actualZres,theoreticalQ,actualQ,gd,success))
     f.close()
+       
+    # Make a 3D plot of Resonance Frequency vs Distance between neighbouring SQUIDs and Number of flux quanta
     
-    # Calculation of Resonance Frequency vs number of flux quanta for fixed values of the other parameters
-    
-    n_flux_quanta = [x * 0.25 for x in range(0, 26)]
+    n_flux_quanta = [x * 0.25 for x in range(0, 26)] # it's the cosine argument in the Ic equation
 
-    resonance = []
+    resonance_vs_fluxquanta = []
     
-    a = 7e-6               # Distance between neighbouring SQUIDs in um
-    A = 0.0068804986731425 # Juction area in um^2 for ox1
-    R_N = coeff_R_N / A
-    RN = R_N + R_N*17/100
-    l = squids*a
+    for a in d:
+        A = junctionArea[d.index(a)]
+        R_N = coeff_R_N / A
+        RN = R_N + R_N*17/100
+        a = a*1e-6
+        l = squids*a
+        
+        resonance = []
+        
+        for flux in n_flux_quanta:
+            tuner = SQUIDmatch(ZL, l, a, RN, Delta, CJ, A, C, flux_quanta=flux)
+            resonance.append(tuner.fn)
+        resonance_vs_fluxquanta.append(resonance)
+        
+    y = np.array(d)
+    x = np.array(n_flux_quanta)
     
-    for flux in n_flux_quanta:
-        tuner = SQUIDmatch(ZL, l, a, RN, Delta, CJ, A, C, flux_quanta=flux)
-        resonance.append(tuner.fn)
- 
-    plt.plot(n_flux_quanta, resonance)
+    X, Y = np.meshgrid(x, y)
+    Z = np.array(resonance_vs_fluxquanta)/1e9
+    
+    fig = plt.figure(num=None, figsize=(10, 10), dpi=80, facecolor='w', edgecolor='k')
+    ax = plt.axes(projection='3d')
+    #ax.contour3D(X, Y, Z, 50, cmap='binary')
+    ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='viridis', edgecolor='none')
+    ax.set_ylabel('Distance between neighbouring SQUIDs / um')
+    ax.set_xlabel('Cosine argument in the Ic equation / radians')
+    ax.set_zlabel('Resonance Frequency / GHz');
+    ax.view_init(45, 35)
+    ax.ticklabel_format(axis="z", style="plain", scilimits=(0,0))
+    
+    # Plot Resonance Frequency vs number of flux quanta for fixed values of the other parameters by slicing the previous 3D plot
+    # at a fixed distance between neighbouring SQUIDs in um
+    
+    distance = 7 # chosen distance between neighbouring SQUIDs in um
+    slice = d.index(distance)
+    fig1 = plt.figure()
+    ax1 = plt.plot(n_flux_quanta,Z[slice,:])
+    plt.ylabel('Resonance Frequency / GHz')
+    plt.xlabel('Cosine argument in the Ic equation / radians')
