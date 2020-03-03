@@ -139,11 +139,11 @@ if __name__== "__main__":
     
     # Calculation of Resonance Frequency vs number of flux quanta for fixed values of the other parameters
     
-    
     n_flux_quanta = [x * 0.25 for x in range(0, 26)]
+
     resonance = []
     
-    a = 7.                 # Distance between neighbouring SQUIDs in um
+    a = 7e-6               # Distance between neighbouring SQUIDs in um
     A = 0.0068804986731425 # Juction area in um^2 for ox1
     R_N = coeff_R_N / A
     RN = R_N + R_N*17/100
@@ -151,6 +151,6 @@ if __name__== "__main__":
     
     for flux in n_flux_quanta:
         tuner = SQUIDmatch(ZL, l, a, RN, Delta, CJ, A, C, flux_quanta=flux)
-        resonance.append(tuner.fn/1e6)
-        
+        resonance.append(tuner.fn)
+ 
     plt.plot(n_flux_quanta, resonance)
