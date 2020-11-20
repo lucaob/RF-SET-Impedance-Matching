@@ -1,6 +1,6 @@
 RF-SET Impedance Matching
 
-In this project is the implementation of a Python class to design the impedace matching network to match the high impedance of a RF-SET with the low impedance of a conventional transmission line (typically 50 ohm).
+This project is the implementation of a Python class to design the impedace matching network to match the high impedance of a RF-SET with the low impedance of a conventional transmission line (typically 50 ohm).
 
 The class is implemented accordingo to:
 C. Altimiras, O. Parlavecchio, P. Joyez, D. Vion, P. Roche, D. Esteve and F. Portier
@@ -8,12 +8,10 @@ C. Altimiras, O. Parlavecchio, P. Joyez, D. Vion, P. Roche, D. Esteve and F. Por
 Applied Physics Letters, 103, 212601 (2013)
 https://doi.org/10.1063/1.4832074
 
-Actually there are two classes, one parent and one child, each one performs che calculation with a different oxidation
-of the Josephson junctions.
+Actually there are two classes, one parent and one child, each one performs che calculation with a different oxidation of the Josephson junctions.
 The parent class takes the values from the following sources:
 
-- Junction Capacitance: L. Wang, "Fabrication stability of Josephson junctions for superconducting qubits",
-  Technische Universitat Munchen, 2015
+- Junction Capacitance: L. Wang, "Fabrication stability of Josephson junctions for superconducting qubits",   Technische Universitat Munchen, 2015
 - Normal Resistance: V. Ambegaokar and A. Baratoff, "Tunneling Between Superconductors", 1963
 - Critical Current: fenomenological curve from our experimental data
 
@@ -21,7 +19,8 @@ The child class takes the falues of the same parameters from S. V. Lotkhov, E. M
 
 The script calculation.py performs the calculations by importing the two classes: it finds the best junction area vs distance between neighbouring SQUIDS and calculate the resonance frequency vs distance between neighbouring SQUIDS for two SQUID array lenght.
 
-Script saves results in text files.
+The script plots a 3D picture of the resonance frequency vs distance between neighbouring SQUIDS vs number of flux quanta and a picture of the resonance frequency vs number of flux quanta for a selected distance between neighbouring SQUIDS.
 
-NEXT STEP: Add calculation of resonance frequncy vs number of flux quanta.
+Script saves results in a text file.
+
 
